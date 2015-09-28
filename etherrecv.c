@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
         if (ether_type <= ETHERMTU) {
             print_payload(&frame);
             fprintf(stderr, 
-                    "INFO: received %d bytes from %s\n", num_recv, args.inf);
+                    "INFO: received %zu bytes from %s\n", num_recv, args.inf);
             dumpbuf((char *)&frame, num_recv);
             fprintf(stderr, "Waiting for a frame to arrive ...\n");
         }
