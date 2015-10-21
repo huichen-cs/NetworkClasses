@@ -348,8 +348,8 @@ static int sendwholemsg(const int sockfd, const char *intf,
         perror("ioctl(sockfd, SIOCGIFINDEX, &ifr)");
         exit(1);
     }
-	sll_addr_dst.sll_ifindex = ifr.ifr_ifindex;
-    dumpbuf((char *)&sll_addr_dst, sizeof(sll_addr_dst));
+    sll_addr_dst.sll_ifindex = ifr.ifr_ifindex;
+    /* dumpbuf((char *)&sll_addr_dst, sizeof(sll_addr_dst)); */
 
 
     /* before we proceed, we need to obtain MTU to determine buffer size */
@@ -445,7 +445,7 @@ static int sendwholemsg(const int sockfd, const char *intf,
 			perror("sendto(sockfd ...");
 			exit(1);
 		}
-        dumpbuf((char *)&sll_addr_dst, sizeof(sll_addr_dst));
+        /* dumpbuf((char *)&sll_addr_dst, sizeof(sll_addr_dst)); */
 
         /* 
          * dump the frame to stdout

@@ -69,42 +69,42 @@ static char *buf = NULL; /* how big should the buffer be? */
 
 int main(int argc, char *argv[])
 {
-	struct sockaddr_ll srcethaddr;  /* man 7 packet    */
+    struct sockaddr_ll srcethaddr;  /* man 7 packet    */
     struct sockaddr_ll bindethaddr; /* man 7 packet    */
-	struct packet_mreq mr;          /* man 7 packet    */
-	struct ifreq ifr;               /* man 7 netdevice */
-	int nbytes;
-	socklen_t addrlen;
+    struct packet_mreq mr;          /* man 7 packet    */
+    struct ifreq ifr;               /* man 7 netdevice */
+    int nbytes;
+    socklen_t addrlen;
 
-	/* how big should the buffer be?
-	 *
-	 * This can be determined by MTU. MTU can be obtained by an ioctl call:
+    /* how big should the buffer be?
      *
-	 * 		ioctl(socket, SIOCGIFMTU, &ifr)
+     * This can be determined by MTU. MTU can be obtained by an ioctl call:
      *
-	 * where socket is a socket descriptor, ifr is of type struct ifreq.
-	 * More information can be found at manual page netdevice(7). Note that
-	 * one needs to give ifr_name to invoke the ioctl call. If a program 
-	 * retrieves frames from more than one device, the maximum MTU among
-	 * the devices should be used. 
-	 *
-	 * In Linux, available network devices can be obtained in multiple
+     *         ioctl(socket, SIOCGIFMTU, &ifr)
+     *
+     * where socket is a socket descriptor, ifr is of type struct ifreq.
+     * More information can be found at manual page netdevice(7). Note that
+     * one needs to give ifr_name to invoke the ioctl call. If a program 
+     * retrieves frames from more than one device, the maximum MTU among
+     * the devices should be used. 
+     *
+     * In Linux, available network devices can be obtained in multiple
      * methods, commonly, 
      * (1) by walking through the /proc/net/dev file. 
      * (2) by calling ioctl(...) with request SIOCGIFCONF
      * (3) via rtnetlink socket
-	 *
-	 * MTU does not include header/trailer. For capturing Ethernet frames,
-	 * the buffer size should be set no less than 
+     *
+     * MTU does not include header/trailer. For capturing Ethernet frames,
+     * the buffer size should be set no less than 
      * 6 + 6 + 2 + MTU = ETHER_HDR_LEN + MTU.
-	 *
-	 * Question: how does IEEE 802.1Q affect the required buffer size?
-	 * */
+     *
+     * Question: how does IEEE 802.1Q affect the required buffer size?
+     * */
 
     int bufsize;      /* how big should the buffer be? */
     int ifindex;      /* interface index               */
 
-	setupsignal(SIGINT, cleanup);    /* capture CTRL-C */
+    setupsignal(SIGINT, cleanup);    /* capture CTRL-C */
 
     if (argc < 2) {
         usage(argv[0]);
@@ -112,11 +112,11 @@ int main(int argc, char *argv[])
     }
 
     /* open a raw packet socket to capture all types of ethernet frames */
-	sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-	if (sockfd < 0) {
-		perror("socket(AF_PACKET, SOCK_RAW, ETH_P_ALL) failed");
-		exit(1);
-	}
+    sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    if (sockfd < 0) {
+        perror("socket(AF_PACKET, SOCK_RAW, ETH_P_ALL) failed");
+        exit(1);
+    }
 
     /* obtain interface index from interface name */
     if ((ifindex = get_if_index(sockfd, argv[1])) == -1) {
@@ -127,11 +127,11 @@ int main(int argc, char *argv[])
     }
 
     /* put the interface into promiscuous mode. man 7 packet */
-	memset(&mr, 0, sizeof(mr));
-	mr.mr_ifindex = ifindex;
-	mr.mr_type =  PACKET_MR_PROMISC;
+    memset(&mr, 0, sizeof(mr));
+    mr.mr_ifindex = ifindex;
+    mr.mr_type =  PACKET_MR_PROMISC;
     if (setsockopt(sockfd, SOL_PACKET, 
-			PACKET_ADD_MEMBERSHIP, (char *)&mr, sizeof(mr)) != 0) {
+            PACKET_ADD_MEMBERSHIP, (char *)&mr, sizeof(mr)) != 0) {
         perror("setsockopt(sockfd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, ...)");
         exit(1);
     }
@@ -142,7 +142,8 @@ int main(int argc, char *argv[])
     bindethaddr.sll_family = AF_PACKET;
     bindethaddr.sll_protocol = htons(ETH_P_ALL);
     bindethaddr.sll_ifindex = ifindex;
-    if (bind(sockfd, (struct sockaddr*)&bindethaddr, sizeof(bindethaddr)) != 0) {
+    if (bind(sockfd, 
+		(struct sockaddr*)&bindethaddr, sizeof(bindethaddr)) != 0) {
         perror("bind(sockfd, &bindethaddr, sizeof(bindethaddr))");
         exit(1);
     }
@@ -150,7 +151,7 @@ int main(int argc, char *argv[])
     /* obtain MTU. see netdevice(7) */
     ifr.ifr_addr.sa_family = AF_PACKET;
     safe_strncpy(ifr.ifr_name, argv[1], IFNAMSIZ);
-	if (ioctl(sockfd, SIOCGIFMTU, &ifr) != 0) {
+    if (ioctl(sockfd, SIOCGIFMTU, &ifr) != 0) {
         perror("ioctl(sockfd, SIOCGIFMTU, &ifr)");
         exit (1);
     }
@@ -164,43 +165,48 @@ int main(int argc, char *argv[])
 
     /* begin capturing */
     memset(&srcethaddr, 0, sizeof(srcethaddr));
-	while (1) {
+    while (1) {
 
-		addrlen = sizeof(srcethaddr);
-		nbytes = recvfrom(sockfd, buf, bufsize, 
-				0, (struct sockaddr*)&srcethaddr, &addrlen);
+        addrlen = sizeof(srcethaddr);
+        nbytes = recvfrom(sockfd, buf, bufsize, 
+                0, (struct sockaddr*)&srcethaddr, &addrlen);
 
-		if (nbytes < 0) {
-			perror("recv(sockfd ...) failed");
-			exit (1);
-		}
-	
+        if (nbytes < 0) {
+            perror("recv(sockfd ...) failed");
+            exit (1);
+        }
+    
         /* dump captured frame */
-		printf("Captured at interface: %s frame from ", argv[1]);
+        printf("Captured at interface: %s frame from ", argv[1]);
         dump_physical_address(srcethaddr.sll_halen, srcethaddr.sll_addr);
         printf("\n");
-		dumpbuf(buf, nbytes);
-	}
+        dumpbuf(buf, nbytes);
+        /**
+         * flush the buffer so that we don't have to rely on stdbuf, as in
+         *     sudo stdbuf -o 0 ./ethercap eth0 | tee frame_captured.txt
+         */
+        fflush(stdout);
+    }
 
     /* remove the interface's promiscuous mode */
-	setsockopt(sockfd, SOL_PACKET, 
-			PACKET_DROP_MEMBERSHIP, (char *)&mr, sizeof(mr));
+    setsockopt(sockfd, SOL_PACKET, 
+            PACKET_DROP_MEMBERSHIP, (char *)&mr, sizeof(mr));
 
     free(buf);
-	close(sockfd);
+    close(sockfd);
 
-	return 0;
+    return 0;
 }
 
 
 static void cleanup(int s __attribute__((unused))) 
 {
-	fflush(stderr);
-	fflush(stdout);
-	fprintf(stderr, "\nUser pressed CTRL-C. Exiting ...\n");
-	if (sockfd >= 0) close(sockfd);
+    fflush(stderr);
+    fflush(stdout);
+    fprintf(stderr, "\nUser pressed CTRL-C. Exiting ...\n");
+    if (sockfd >= 0) close(sockfd);
     if (buf != NULL) free(buf);
-	exit(0);
+    exit(0);
 }
 
 static void usage(char *prog) 
