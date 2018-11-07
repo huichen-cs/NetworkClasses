@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     bindethaddr.sll_protocol = htons(ETH_P_ALL);
     bindethaddr.sll_ifindex = ifindex;
     if (bind(sockfd, 
-		(struct sockaddr*)&bindethaddr, sizeof(bindethaddr)) != 0) {
+        (struct sockaddr*)&bindethaddr, sizeof(bindethaddr)) != 0) {
         perror("bind(sockfd, &bindethaddr, sizeof(bindethaddr))");
         exit(1);
     }

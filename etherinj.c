@@ -94,23 +94,23 @@
 enum msgtype {UNDEFINED = 0, SENDFILE = 1, SENDMSG = 2};
 
 struct filemsgstate {
-	int filefd;
-	int msglen;
+    int filefd;
+    int msglen;
 };
 
 struct strmsgstate {
-	char *msg;
-	int msglen;
-	int bufpos;
+    char *msg;
+    int msglen;
+    int bufpos;
 };
 
 struct msgsource {
-	int type;
-	struct msgstate *ms;
-	int (*init)(void *ms, char *msg);
-	int (*copymsgpart)(void *ms, char *buf, const int len);
-	int (*cleanup)(void *ms);
-	int (*getmsglen)(void *ms);
+    int type;
+    struct msgstate *ms;
+    int (*init)(void *ms, char *msg);
+    int (*copymsgpart)(void *ms, char *buf, const int len);
+    int (*cleanup)(void *ms);
+    int (*getmsglen)(void *ms);
 };
 
 static void parse_cmd_line_arguments(int argc, char *argv[], 
@@ -118,7 +118,7 @@ static void parse_cmd_line_arguments(int argc, char *argv[],
 static void cleanup(int s);
 static void usage();
 static int sendwholemsg(const int sockfd, const char *intf,
-		char *src, char *dst, char *msg, const enum msgtype opt_fm);
+        char *src, char *dst, char *msg, const enum msgtype opt_fm);
 static int strmsginit(void *ms, char *msg);
 static int strmsgcppart(void *ms, char *buf, const int len);
 static int strmsggetlen(void *ms);
@@ -129,136 +129,136 @@ static int filemsggetlen(void *ms);
 
 
 static int sockfd = -1,
-		   filefd = -1;
+           filefd = -1;
 
 int main(int argc, char *argv[])
 {
-	char *src, *dst, *msg, *intf;
-	enum msgtype opt_fm = UNDEFINED;
+    char *src, *dst, *msg, *intf;
+    enum msgtype opt_fm = UNDEFINED;
 
     /* handling CTRL-C */
-	setupsignal(SIGINT, cleanup); 
+    setupsignal(SIGINT, cleanup); 
 
     /* check usage */
-	if (argc < 8) {
-		usage();
-		exit(0);
-	}
+    if (argc < 8) {
+        usage();
+        exit(0);
+    }
 
     /* parse command line arguments */
     parse_cmd_line_arguments(argc, argv, &src, &dst, &opt_fm, &msg, &intf);
 
-	fprintf(stderr, "Transmitting src = [%s] -> dst = [%s] "
-			"via Interface = [%s] for %s = [%s]\n",
-			src, dst, intf, opt_fm==SENDMSG?"msg":"file", msg);
+    fprintf(stderr, "Transmitting src = [%s] -> dst = [%s] "
+            "via Interface = [%s] for %s = [%s]\n",
+            src, dst, intf, opt_fm==SENDMSG?"msg":"file", msg);
 
     /* open a raw packet socket */
-	sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-	if (sockfd == -1) {
-		perror("socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL) failed");
-		exit(1);
-	}
+    sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    if (sockfd == -1) {
+        perror("socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL) failed");
+        exit(1);
+    }
 
     /* send the whole message in one or more ethernet frames */
-	sendwholemsg(sockfd, intf, src, dst, msg, opt_fm);
+    sendwholemsg(sockfd, intf, src, dst, msg, opt_fm);
 
     /* clean house before exiting */
-	close(sockfd);
-	sockfd = -1;
+    close(sockfd);
+    sockfd = -1;
 
-	return 0;
+    return 0;
 }
 
 static void parse_cmd_line_arguments(int argc, char *argv[], 
         char **src, char **dst, enum msgtype *opt_fm, char **msg, char **intf) 
 {
     /* parse command line arguments */
-	argc --;
-	argv ++;
-	while (argc && *argv[0] == '-') {
-		if (!strcmp(*argv, "-s")) {
-			if (*(argv+1)[0] == '-') {
-				usage();
-				exit(1);
-			}
-			*src = *(argv + 1);
-		}
-		else if (!strcmp(*argv, "-d")) {
-			if (*(argv+1)[0] == '-') {
-				usage();
-				exit(1);
-			}
-			*dst = *(argv + 1);
-		}
-		else if (!strcmp(*argv, "-f")) {
-			if (*opt_fm == SENDMSG) {
-				fprintf(stderr,
-						"Usage: -f and -m cannot occure at the same time\n");
-				exit(1);
-			}
-			if (*(argv+1)[0] == '-') {
-				usage();
-				exit(1);
-			}
-			*msg = *(argv + 1);
-			*opt_fm = SENDFILE;
-		}
-		else if(!strcmp(*argv, "-m")) {
-			if (*opt_fm == SENDFILE) {
-				fprintf(stderr,
-						"Usage: -f and -m cannot occure at the same time\n");
-				exit(1);
-			}
-			if (*(argv+1)[0] == '-') {
-				usage();
-				exit(1);
-			}
-			*msg = *(argv + 1);
-			*opt_fm = SENDMSG;
-		}
-		else {
-			usage();
-			exit(1);
-		}
+    argc --;
+    argv ++;
+    while (argc && *argv[0] == '-') {
+        if (!strcmp(*argv, "-s")) {
+            if (*(argv+1)[0] == '-') {
+                usage();
+                exit(1);
+            }
+            *src = *(argv + 1);
+        }
+        else if (!strcmp(*argv, "-d")) {
+            if (*(argv+1)[0] == '-') {
+                usage();
+                exit(1);
+            }
+            *dst = *(argv + 1);
+        }
+        else if (!strcmp(*argv, "-f")) {
+            if (*opt_fm == SENDMSG) {
+                fprintf(stderr,
+                        "Usage: -f and -m cannot occure at the same time\n");
+                exit(1);
+            }
+            if (*(argv+1)[0] == '-') {
+                usage();
+                exit(1);
+            }
+            *msg = *(argv + 1);
+            *opt_fm = SENDFILE;
+        }
+        else if(!strcmp(*argv, "-m")) {
+            if (*opt_fm == SENDFILE) {
+                fprintf(stderr,
+                        "Usage: -f and -m cannot occure at the same time\n");
+                exit(1);
+            }
+            if (*(argv+1)[0] == '-') {
+                usage();
+                exit(1);
+            }
+            *msg = *(argv + 1);
+            *opt_fm = SENDMSG;
+        }
+        else {
+            usage();
+            exit(1);
+        }
 
-		argc -= 2;
-		argv += 2;
-	}
+        argc -= 2;
+        argv += 2;
+    }
 
-	*intf = *argv;
+    *intf = *argv;
 }
 
 
 static void usage() 
 {
-	fprintf(stderr, 
-			"Usage: etherinj -s src -d dst [-f file | -m msg] <interface>\n");
+    fprintf(stderr, 
+            "Usage: etherinj -s src -d dst [-f file | -m msg] <interface>\n");
 }
 
 static void cleanup(int s __attribute__((unused)))  
 {
-	if (sockfd >= 0) {
-		close(sockfd);
-		sockfd = -1;
-	}
+    if (sockfd >= 0) {
+        close(sockfd);
+        sockfd = -1;
+    }
 
-	if (filefd >= 0) {
-		close(filefd);
-		filefd = -1;
-	}
+    if (filefd >= 0) {
+        close(filefd);
+        filefd = -1;
+    }
 }
 
 static int sendwholemsg(const int sockfd, const char *intf, 
-		char *src, char *dst, char *msg, const enum msgtype opt_fm)
+        char *src, char *dst, char *msg, const enum msgtype opt_fm)
 {
-	struct sockaddr_ll sll_addr_dst;      /* see packet(7)    */
-	struct ifreq ifr;                     /* see netdevice(7) */
-	struct ether_addr ethersrc, 
+    struct sockaddr_ll sll_addr_dst;      /* see packet(7)    */
+    struct ifreq ifr;                     /* see netdevice(7) */
+    struct ether_addr ethersrc, 
                       etherdst;           /* net/ethernet.h   */
-	struct msgsource msgsrc;
-	char *bufpos, 
+    struct msgsource msgsrc;
+    char *bufpos, 
          *buf;
-	short msglen, 
+    short msglen, 
           payloadlen, 
           netlen, 
           minpayloadlen = ETH_ZLEN - ETH_HLEN, 
@@ -268,17 +268,17 @@ static int sendwholemsg(const int sockfd, const char *intf,
      * convert hex-digits-and-colons notation into binary data 
      * in network byte order
      * */
-	if (ether_aton_r(src, &ethersrc) == NULL) {
-		fprintf(stderr, "ether_aton_r(src ...) failed: Ethernet address must "
-			   			"be in the standard hex-digits-and-colons notation");
-		exit(1);
-	}
+    if (ether_aton_r(src, &ethersrc) == NULL) {
+        fprintf(stderr, "ether_aton_r(src ...) failed: Ethernet address must "
+                           "be in the standard hex-digits-and-colons notation");
+        exit(1);
+    }
 
-	if (ether_aton_r(dst, &etherdst) == NULL) {
-		fprintf(stderr, "ether_aton_r(dst ...) failed: Ethernet address must "
-			   			"be in the standard hex-digits-and-colons notation");
-		exit(1);
-	}
+    if (ether_aton_r(dst, &etherdst) == NULL) {
+        fprintf(stderr, "ether_aton_r(dst ...) failed: Ethernet address must "
+                           "be in the standard hex-digits-and-colons notation");
+        exit(1);
+    }
 
     /* 
      * When  you  send  packets  it is enough to specify sll_family, sll_addr,
@@ -295,8 +295,8 @@ static int sendwholemsg(const int sockfd, const char *intf,
      * has the source address.
      *
      * */
-	memset(&sll_addr_dst, 0, sizeof(sll_addr_dst));
-	sll_addr_dst.sll_family = AF_PACKET;
+    memset(&sll_addr_dst, 0, sizeof(sll_addr_dst));
+    sll_addr_dst.sll_family = AF_PACKET;
     
     /* 
      * obtain injecting interface's address, and use it to set sll_addr 
@@ -316,13 +316,13 @@ static int sendwholemsg(const int sockfd, const char *intf,
      *
      *
      * */
-	ifr.ifr_name[IFNAMSIZ-1] = '\0';
-	strncpy(ifr.ifr_name, intf, IFNAMSIZ-1);
-	if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) == -1) {
+    ifr.ifr_name[IFNAMSIZ-1] = '\0';
+    strncpy(ifr.ifr_name, intf, IFNAMSIZ-1);
+    if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) == -1) {
         perror("ioctl(sockfd, SIOCGIFHWADDR, &ifr)");
         exit(1);
     }
-	memcpy(sll_addr_dst.sll_addr, &(ifr.ifr_hwaddr.sa_data), sizeof(sll_addr_dst.sll_addr));
+    memcpy(sll_addr_dst.sll_addr, &(ifr.ifr_hwaddr.sa_data), sizeof(sll_addr_dst.sll_addr));
 
     /* set sll_halen */
     if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
@@ -344,7 +344,7 @@ static int sendwholemsg(const int sockfd, const char *intf,
      * for more, see netdevice(7)
      *
      * */
-	if (ioctl(sockfd, SIOCGIFINDEX, &ifr) == -1) {
+    if (ioctl(sockfd, SIOCGIFINDEX, &ifr) == -1) {
         perror("ioctl(sockfd, SIOCGIFINDEX, &ifr)");
         exit(1);
     }
@@ -355,7 +355,7 @@ static int sendwholemsg(const int sockfd, const char *intf,
     /* before we proceed, we need to obtain MTU to determine buffer size */
     ifr.ifr_addr.sa_family = AF_PACKET;
     safe_strncpy(ifr.ifr_name, intf, IFNAMSIZ);
-	if (ioctl(sockfd, SIOCGIFMTU, &ifr) != 0) {
+    if (ioctl(sockfd, SIOCGIFMTU, &ifr) != 0) {
         perror("ioctl(sockfd, SIOCGIFMTU, &ifr)");
         exit(1);
     }
@@ -370,167 +370,167 @@ static int sendwholemsg(const int sockfd, const char *intf,
      * fill destination and source address fields of Ethernet frames
      * to be sent 
      * */
-	bufpos = buf;
-	memcpy(bufpos, &etherdst, ETH_ALEN);
-	bufpos += ETH_ALEN;
-	memcpy(bufpos, &ethersrc, ETH_ALEN);
-	bufpos += ETH_ALEN;
+    bufpos = buf;
+    memcpy(bufpos, &etherdst, ETH_ALEN);
+    bufpos += ETH_ALEN;
+    memcpy(bufpos, &ethersrc, ETH_ALEN);
+    bufpos += ETH_ALEN;
 
     /*
      * initialize message handler based on message type, a message from
      * command line, or the content of a file specified in command line
      * */
-	msgsrc.type = opt_fm;
-	switch(opt_fm) {
-	case SENDMSG:
-		msgsrc.ms = malloc(sizeof(struct strmsgstate));
-		msgsrc.init = strmsginit;
-		msgsrc.copymsgpart = strmsgcppart;
-		msgsrc.cleanup = NULL;
-		msgsrc.getmsglen = strmsggetlen;
-		break;
-	case SENDFILE:
-		msgsrc.ms = malloc(sizeof(struct filemsgstate));
-		msgsrc.init = filemsginit;
-		msgsrc.copymsgpart = filemsgcppart;
-		msgsrc.cleanup = filemsgcleanup;
-		msgsrc.getmsglen = filemsggetlen;
-		break;
-	case UNDEFINED:
-		fprintf(stderr, "Case UNDEFINED cannot be handled\n");
-		exit(1);
-	}
+    msgsrc.type = opt_fm;
+    switch(opt_fm) {
+    case SENDMSG:
+        msgsrc.ms = malloc(sizeof(struct strmsgstate));
+        msgsrc.init = strmsginit;
+        msgsrc.copymsgpart = strmsgcppart;
+        msgsrc.cleanup = NULL;
+        msgsrc.getmsglen = strmsggetlen;
+        break;
+    case SENDFILE:
+        msgsrc.ms = malloc(sizeof(struct filemsgstate));
+        msgsrc.init = filemsginit;
+        msgsrc.copymsgpart = filemsgcppart;
+        msgsrc.cleanup = filemsgcleanup;
+        msgsrc.getmsglen = filemsggetlen;
+        break;
+    case UNDEFINED:
+        fprintf(stderr, "Case UNDEFINED cannot be handled\n");
+        exit(1);
+    }
 
-	msgsrc.init(msgsrc.ms, msg);
-	msglen = msgsrc.getmsglen(msgsrc.ms);
+    msgsrc.init(msgsrc.ms, msg);
+    msglen = msgsrc.getmsglen(msgsrc.ms);
 
-	while (msglen > 0) { 
+    while (msglen > 0) { 
         /*
          * compute frame payload length 
          * */
-		if (msglen > ETH_DATA_LEN) {
-			payloadlen = ETH_DATA_LEN;
-			msglen -= ETH_DATA_LEN;
-		} else {
-			payloadlen = msglen;
-			msglen = 0;
-		}
+        if (msglen > ETH_DATA_LEN) {
+            payloadlen = ETH_DATA_LEN;
+            msglen -= ETH_DATA_LEN;
+        } else {
+            payloadlen = msglen;
+            msglen = 0;
+        }
 
         /*
          * fill frame payload 
          * */
-		msgsrc.copymsgpart(msgsrc.ms, bufpos+2, payloadlen);
+        msgsrc.copymsgpart(msgsrc.ms, bufpos+2, payloadlen);
 
         /*
          * pad the frame with 0's when the frame's payload is too
          * small to meet frame's minimum length requirement, i.e.,
          * MIN_ZLEN without including CRC
          * */
-		if (payloadlen < minpayloadlen) {
-			memset(bufpos+2+payloadlen, '\0', minpayloadlen - payloadlen);
-			payloadlen = minpayloadlen;
-		}
+        if (payloadlen < minpayloadlen) {
+            memset(bufpos+2+payloadlen, '\0', minpayloadlen - payloadlen);
+            payloadlen = minpayloadlen;
+        }
 
         /*
          *  fill frame length/type field with payload length
          * */
-		netlen = htons(payloadlen);
-		memcpy(bufpos, &netlen, 2);
+        netlen = htons(payloadlen);
+        memcpy(bufpos, &netlen, 2);
 
         /*
          * send the frame 
          * */
-		if (sendto(sockfd, buf, payloadlen+ETH_HLEN, 0, 
-				(struct sockaddr*)&sll_addr_dst, sizeof(sll_addr_dst)) < 0) {
-			perror("sendto(sockfd ...");
-			exit(1);
-		}
+        if (sendto(sockfd, buf, payloadlen+ETH_HLEN, 0, 
+                (struct sockaddr*)&sll_addr_dst, sizeof(sll_addr_dst)) < 0) {
+            perror("sendto(sockfd ...");
+            exit(1);
+        }
         /* dumpbuf((char *)&sll_addr_dst, sizeof(sll_addr_dst)); */
 
         /* 
          * dump the frame to stdout
          * */
-		fprintf(stdout, 
+        fprintf(stdout, 
                 "Frame transmitted (Payload Length = [%d]): \n", payloadlen);
-		dumpbuf(buf, payloadlen+ETH_HLEN);
-	}
+        dumpbuf(buf, payloadlen+ETH_HLEN);
+    }
 
     /* clean house */
-	if (msgsrc.cleanup)
-		msgsrc.cleanup(msgsrc.ms);
+    if (msgsrc.cleanup)
+        msgsrc.cleanup(msgsrc.ms);
     free(buf);
 
-	return 0;
+    return 0;
 }
 
 static int strmsginit(void *ms, char *msg)
 {
-	struct strmsgstate *handler = (struct strmsgstate*)ms;
-	handler->msg = msg;
-	handler->bufpos = 0;
-	handler->msglen = strlen(msg);
+    struct strmsgstate *handler = (struct strmsgstate*)ms;
+    handler->msg = msg;
+    handler->bufpos = 0;
+    handler->msglen = strlen(msg);
 
-	return 0;
+    return 0;
 }
 
 static int strmsgcppart(void *ms, char *buf, const int len) 
 {
-	struct strmsgstate *handler;
-	handler = (struct strmsgstate*)ms;
+    struct strmsgstate *handler;
+    handler = (struct strmsgstate*)ms;
 
-	memcpy(buf, handler->msg+handler->bufpos, len);
-	handler->bufpos += len;
+    memcpy(buf, handler->msg+handler->bufpos, len);
+    handler->bufpos += len;
 
-	return 0;
+    return 0;
 }
 
 static int strmsggetlen(void *ms)
 {
-	 struct strmsgstate *handler = (struct strmsgstate*)ms;
-	 return handler->msglen;
+     struct strmsgstate *handler = (struct strmsgstate*)ms;
+     return handler->msglen;
 }
 
 static int filemsginit(void *ms, char *filename)
 {
-	struct stat fs;
-	struct filemsgstate *handler = (struct filemsgstate*)ms;
+    struct stat fs;
+    struct filemsgstate *handler = (struct filemsgstate*)ms;
 
-	handler->filefd = open(filename, O_RDONLY);
-	if (handler->filefd == -1) {
-		perror("open(msg, O_RDONLY ...):");
-		return 1;
-	}
-	
-	if (fstat(handler->filefd, &fs) == -1) {
-		perror("fstat(filefd, ...):");
-		return 1;
-	}
-	handler->msglen = fs.st_size;
+    handler->filefd = open(filename, O_RDONLY);
+    if (handler->filefd == -1) {
+        perror("open(msg, O_RDONLY ...):");
+        return 1;
+    }
+    
+    if (fstat(handler->filefd, &fs) == -1) {
+        perror("fstat(filefd, ...):");
+        return 1;
+    }
+    handler->msglen = fs.st_size;
 
-	return 0;
+    return 0;
 }
 
 static int filemsgcppart(void *ms, char *buf, const int len) 
 {
-	struct filemsgstate *handler = (struct filemsgstate*)ms;
+    struct filemsgstate *handler = (struct filemsgstate*)ms;
 
-	if (read(handler->filefd, buf, len) != len) {
-		perror("read(filefd, ...):");
-		return 1;
-	}
-	return 0;
+    if (read(handler->filefd, buf, len) != len) {
+        perror("read(filefd, ...):");
+        return 1;
+    }
+    return 0;
 }
 
 static int filemsgcleanup(void *ms)
 {
-	struct filemsgstate *handler = (struct filemsgstate*)ms;
+    struct filemsgstate *handler = (struct filemsgstate*)ms;
 
-	close(handler->filefd);	
-	return 0;
+    close(handler->filefd);    
+    return 0;
 }
 
 static int filemsggetlen(void *ms)
 {
-	 struct filemsgstate *handler = (struct filemsgstate*)ms;
-	 return handler->msglen;
+     struct filemsgstate *handler = (struct filemsgstate*)ms;
+     return handler->msglen;
 }

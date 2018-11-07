@@ -26,15 +26,15 @@
 
 sighandler_t setupsignal(int signum, sighandler_t handler)
 {
-	struct sigaction new_act, old_act;
+    struct sigaction new_act, old_act;
 
-	new_act.sa_handler = handler;
-	sigemptyset (&new_act.sa_mask);
-	new_act.sa_flags = 0;
+    new_act.sa_handler = handler;
+    sigemptyset (&new_act.sa_mask);
+    new_act.sa_flags = 0;
 
-	if (sigaction(signum, &new_act, &old_act) == -1)
-		return SIG_ERR;
-	else
-		return old_act.sa_handler;
-}	
+    if (sigaction(signum, &new_act, &old_act) == -1)
+        return SIG_ERR;
+    else
+        return old_act.sa_handler;
+}    
 
