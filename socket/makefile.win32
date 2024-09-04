@@ -1,0 +1,34 @@
+all: \
+	udp_hello_srv.exe udp_hello_cli.exe udp_zero_cli.exe udp_file_cli.exe \
+	tcp_hello_srv.exe tcp_hello_cli.exe tcp_zero_cli.exe tcp_file_cli.exe
+
+CC=cl
+
+CFLAGS=/DBIND_TO_ANY /DSERVER_IP=\"192.168.1.51\"
+
+udp_hello_srv.exe: udp_hello_srv.obj
+	$(CC) udp_hello_srv.obj  /Feudp_hello_srv.exe /link ws2_32.lib
+
+udp_hello_cli.exe: udp_hello_cli.obj
+	$(CC) udp_hello_cli.obj  /Feudp_hello_cli.exe /link ws2_32.lib
+
+udp_zero_cli.exe: udp_zero_cli.obj
+	$(CC) udp_zero_cli.obj  /Feudp_zero_cli.exe /link ws2_32.lib
+
+udp_file_cli.exe: udp_file_cli.obj
+	$(CC) udp_file_cli.obj  /Feudp_file_cli.exe /link ws2_32.lib
+
+tcp_hello_srv.exe: tcp_hello_srv.obj
+	$(CC) tcp_hello_srv.obj  /Fetcp_hello_srv.exe /link ws2_32.lib
+
+tcp_hello_cli.exe: tcp_hello_cli.obj
+	$(CC) tcp_hello_cli.obj  /Fetcp_hello_cli.exe /link ws2_32.lib
+
+tcp_file_cli.exe: tcp_file_cli.obj
+	$(CC) tcp_file_cli.obj  /Fetcp_file_cli.exe /link ws2_32.lib
+
+tcp_zero_cli.exe: tcp_zero_cli.obj
+	$(CC) tcp_zero_cli.obj  /Fetcp_zero_cli.exe /link ws2_32.lib
+
+clean:
+	del *.obj *.exe

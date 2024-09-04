@@ -1,0 +1,3 @@
+#!/bin/sh
+
+make BIND_TO_ANY=1 SERVER_IP=127.0.0.1
